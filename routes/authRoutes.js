@@ -14,7 +14,15 @@ const registerSchema = Joi.object({
 
 const sendTokenResponse = (user, statusCode, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '2h' });
-    res.cookie('token', token, { expires: new Date(Date.now() + 2 * 60 * 60 * 1000), httpOnly: true, secure: false, sameSite: 'lax' });
+    
+    // ДОДАНО: secure: true та sameSite: 'none' для роботи між доменами
+    res.cookie('token', token, { 
+        expires: new Date(Date.now() + 2 * 60 * 60 * 1000), 
+        httpOnly: true, 
+        secure: true, 
+        sameSite: 'none' 
+    });
+    
     res.status(statusCode).json({ success: true, token, user: { id: user._id, name: user.name, email: user.email } });
 };
 
@@ -47,7 +55,12 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-    res.cookie('token', 'none', { expires: new Date(Date.now() + 10 * 1000), httpOnly: true });
+    res.cookie('token', 'none', { 
+        expires: new Date(Date.now() + 10 * 1000), 
+        httpOnly: true, 
+        secure: true, 
+        sameSite: 'none' 
+    });
     res.status(200).json({ success: true, message: 'Вийшли успішно' });
 });
 
